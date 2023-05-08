@@ -1,0 +1,26 @@
+version: '2.4'
+
+volumes:
+  tailscale-state:
+    driver: local
+
+services:
+  tailscaled:
+    image: prossouw79/tailscale-subnet-router-docker:latest
+    build:
+      context: .
+    environment:
+      TAILSCALE_AUTH_KEY: ${TAILSCALE_AUTH_KEY:?err}
+      TAILSCALE_HOSTNAME: ${TAILSCALE_HOSTNAME:?err}
+      TAILSCALE_TAG: ${TAILSCALE_TAG:?err}
+      TAILSCALE_ADVERTISE_CIDR: ${TAILSCALE_ADVERTISE_CIDR:?err}
+    volumes:
+      - tailscale-state:/var/lib/tailscale_state/
+    privileged: true
+    healthcheck:
+      test: tailscale ip || exit 1
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
+    restart: 'unless-stopped'
